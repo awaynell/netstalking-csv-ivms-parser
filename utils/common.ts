@@ -1,4 +1,5 @@
 import * as fs from "fs";
+
 export const formatDatestring = (date: string) => {
   const formattedDatestring = date
     .split(".")
@@ -16,5 +17,6 @@ export const formatDatestring = (date: string) => {
 };
 
 export const fileIsExist = (fileName) => {
+  console.log("is exist?", fs.existsSync(fileName));
   return fs.existsSync(fileName);
 };

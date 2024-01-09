@@ -8,19 +8,20 @@
   "private": true,
   "dependencies": {
     "csv-parse": "^5.5.3",
-    "csv-parser": "^3.0.0",
     "dotenv": "^16.3.1",
     "html-creator": "^0.7.2",
-    "inquirer": "8.0.0",
-    "typescript": "^5.3.3"
+    "inquirer": "8.0.0"
   },
   "scripts": {
     "compile": "yarn tsc -p .",
     "start": "yarn tsc -p . && node dist/index.js"
   },
   "devDependencies": {
+    "@ptkdev/logger": "^1.8.0",
     "@types/inquirer": "^9.0.7",
     "@types/node": "^20.10.8",
-    "tsconfig-paths": "^4.2.0"
+    "http-server": "^14.1.1",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.3.3"
   }
 }

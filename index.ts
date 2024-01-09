@@ -2,110 +2,110 @@ import * as fs from "fs";
 import { parse } from "csv-parse";
 import * as dotenv from "dotenv";
 import * as path from "path";
-import inquirer from "inquirer";
-import { fileIsExist, formatDatestring } from "./utils/common";
+import htmlCreator from "html-creator";
+import http from "http";
+const Logger = require("@ptkdev/logger");
 
-const mockData = "4_12_2023";
-const mockFileName = "hikkafile_4_12_2023_part_0";
+import { fileIsExist, formatDatestring } from "./utils/common";
+import { htmlGenerator } from "utils/htmlGenerator";
+import { getAnswers } from "utils/getAnswers";
 
 dotenv.config();
+const logger = new Logger();
 const pathToNesca = process.env.PATH_TO_NESCA;
-import htmlCreator from "html-creator";
+const currentDate = new Date().toLocaleDateString("ru-RU").split(".").join("");
+let pathDate, fileName, pathToOutputFile, initialNumber, countryCode;
 
 async function main(answers) {
-  const formattedDate = formatDatestring(answers.pathDate);
-
-  getFile(formattedDate, answers.fileName);
-}
-
-function getFile(pathDate: string, fileName: string) {
-  const pathToFile = path.resolve(
-    `${pathToNesca}/result_files-${mockData}`,
-    `${mockFileName}.csv`
+  pathDate = formatDatestring(answers.pathDate);
+  fileName = answers.fileName;
+  initialNumber = answers.initialNumber;
+  countryCode = answers.countryCode;
+  pathToOutputFile = path.resolve(
+    `${pathToNesca}/result_files-${pathDate}`,
+    `output.html`
   );
 
-  const rowArr = [];
+  getFile(pathDate, fileName);
+}
 
-  // fs.readFile(pathToFile, "utf8", (err, data) => {
-  //   console.log(data);
-  // });
+async function getFile(pathDate: string, fileName: string) {
+  const pathToFile = path.resolve(
+    `${pathToNesca}/result_files-${pathDate}`,
+    `${fileName}.csv`
+  );
+
+  const rowArr = ["NAME", "IP", "LOGIN", "PASSWORD"];
+
+  initialNumber = initialNumber || 1;
 
   fs.createReadStream(pathToFile)
     .pipe(parse({ delimiter: ",", from_line: 1 }))
     .on("data", function (row) {
-      rowArr.push(row);
+      rowArr.push(
+        `${countryCode} ${currentDate} ${initialNumber}`,
+        row[0],
+        row[5],
+        row[6]
+      );
+      initialNumber = initialNumber + 1;
     })
     .on("end", function () {
-      console.log(rowArr);
+      logger.info("Анализ файла окончен. Начинаю работу...");
+      createHTMLFile(rowArr);
+      initialNumber = 0;
     })
     .on("error", function (error) {
-      console.log(error.message);
+      logger.error(error.message);
     });
-
-  createHTMLFile();
 }
 
-async function getAnswers(): Promise<{ pathDate: string; fileName: string }> {
-  const questions = [
-    {
-      type: "input",
-      name: "pathDate",
-      message: "Какой даты папка с находками? (напр. 09.01.2024)",
-    },
-    {
-      type: "input",
-      name: "fileName",
-      message: "Укажи полное название файла",
-    },
-  ];
-
-  return inquirer.prompt(questions).then((ans) => {
-    return ans;
-  });
-}
-
-function createHTMLFile() {
-  if (fileIsExist("output.html")) {
-    fs.unlink("output.html", (err) => {
-      throw new Error(err.message);
+function createHTMLFile(rows) {
+  if (fileIsExist(pathToOutputFile)) {
+    fs.unlink(pathToOutputFile, (err) => {
+      if (err) {
+        throw new Error(err?.message);
+      } else {
+        logger.debug("Старый output файл удалён.");
+      }
     });
   }
-  const html = new htmlCreator([
-    {
-      type: "head",
-      content: [{ type: "title", content: "Generated HTML" }],
-    },
-    {
-      type: "body",
-      attributes: { style: "background-color: black; color: white;" },
-      content: [
-        {
-          type: "div",
-          content: [
-            {
-              type: "span",
-              content: "A Button Span Deluxe",
-              attributes: { className: "button" },
-            },
-            {
-              type: "a",
-              content: "Click here",
-              attributes: { href: "/path-to-infinity", target: "_blank" },
-            },
-          ],
-        },
-        {
-          type: "table",
-          content: [{ type: "td", content: "I am in a table!" }],
-        },
-      ],
-    },
-  ]);
+
+  const htmlContent = rows.map((row, idx) => {
+    return {
+      type: "div",
+      attributes: { id: "item" },
+      content: [{ type: "span", content: row }],
+    };
+  });
+
+  const html = new htmlCreator(htmlGenerator(htmlContent));
 
   const result = html.renderHTML();
 
-  fs.appendFile("output.html", result, (err) => {
-    console.log(err);
+  console.log("pathToOutputFile", pathToOutputFile);
+
+  fs.appendFile(pathToOutputFile, result, (err) => {
+    if (err) {
+      logger.error(err.message);
+    } else {
+      logger.info(`Все IP добавлены в output.html по пути ${pathToOutputFile}`);
+
+      fs.readFile(pathToOutputFile, function (err, html) {
+        if (err) {
+          logger.error(err.message);
+        }
+        http
+          .createServer(function (request, response) {
+            response.writeHead(200, { "Content-Type": "text/html" });
+            response.write(html);
+            response.end();
+          })
+          .listen(8000);
+
+        logger.info("Открыть файл можно здесь: http://127.0.0.1:8000");
+      });
+    }
   });
 }
 
