@@ -11,12 +11,9 @@ export const formatDatestring = (date: string) => {
     })
     .join("_");
 
-  console.log("formattedDatestring", formattedDatestring);
-
   return formattedDatestring;
 };
 
 export const fileIsExist = (fileName) => {
-  console.log("is exist?", fs.existsSync(fileName));
   return fs.existsSync(fileName);
 };
