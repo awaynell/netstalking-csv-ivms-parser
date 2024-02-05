@@ -44,7 +44,6 @@ export async function createHTMLFile(rows, logger, pathToOutputFile) {
             response.end();
           })
           .listen(8000);
-
         logger.info("Открыть файл можно здесь: http://127.0.0.1:8000");
       });
     }
