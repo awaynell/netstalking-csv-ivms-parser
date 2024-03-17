@@ -21,7 +21,7 @@ async function main(answers) {
   countryCode = answers.countryCode;
   pathToOutputFile = path.resolve(
     `${pathToNesca}/result_files-${pathDate}`,
-    `output.html`
+    `output.csv`
   );
 
   getFile(
