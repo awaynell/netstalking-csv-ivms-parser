@@ -6,6 +6,7 @@ import { createCSVFile } from "./createCSVFile";
 export async function getFile(
   pathDate: string,
   fileName: string,
+  filePart: string,
   initialNumber: number,
   logger,
   pathToNesca: string,
@@ -13,10 +14,20 @@ export async function getFile(
   currentDate: string,
   pathToOutputFile
 ) {
-  const pathToFile = path.resolve(
-    `${pathToNesca}/result_files-${pathDate}`,
-    `${fileName}.csv`
-  );
+
+  let pathToFile;
+
+  if (fileName === 'default') {
+    pathToFile = path.resolve(
+      `${pathToNesca}/result_files-${pathDate}`,
+      `hikkafile_${pathDate}_part_${filePart}.csv`
+    );
+  } else {
+    pathToFile = path.resolve(
+      `${pathToNesca}/result_files-${pathDate}`,
+      `${fileName}.csv`
+    );
+  }
 
   console.log("path", pathToFile);
 

@@ -10,13 +10,13 @@ dotenv.config();
 
 const logger = new Logger();
 const pathToNesca = process.env.PATH_TO_NESCA;
-const currentDate = new Date().toLocaleDateString("ru-RU").split(".").join("");
 
-let pathDate, fileName, pathToOutputFile, initialNumber, countryCode;
+let pathDate, fileName, filePart, pathToOutputFile, initialNumber, countryCode;
 
 async function main(answers) {
   pathDate = formatDatestring(answers.pathDate);
   fileName = answers.fileName;
+  filePart = answers.filePart;
   initialNumber = +answers.initialNumber;
   countryCode = answers.countryCode;
   pathToOutputFile = path.resolve(
@@ -27,11 +27,12 @@ async function main(answers) {
   getFile(
     pathDate,
     fileName,
+    filePart,
     initialNumber,
     logger,
     pathToNesca,
     countryCode,
-    currentDate,
+    pathDate,
     pathToOutputFile
   );
 }
