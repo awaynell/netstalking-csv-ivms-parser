@@ -3,7 +3,7 @@
 ## Установка
 
 ```sh
-git clone <repo_github_link>
+git clone [<repo_github_link>](https://github.com/awaynell/netstalking-csv-ivms-parser.git)
 cd netstalking-csv-ivms-parser
 ```
 
